@@ -11,7 +11,7 @@ const ascii85 = @import("ascii85");
 /// To RUN: zig run layer1.zig --pkg-begin ascii85 ascii85.zig --pkg-end
 ///
 pub fn main() !void {
-    const layer1_encoded_file = try fs.cwd().openFile("layer1.txt", .{});
+    const layer1_encoded_file = try fs.cwd().openFile("layer1_payload.txt", .{});
     defer layer1_encoded_file.close();
 
     var encode_buffer: [100 * 1024]u8 = undefined;
@@ -21,5 +21,5 @@ pub fn main() !void {
     const layer1_decoded_len = ascii85.decode(encode_buffer[0..layer1_encoded_len], decode_buffer[0..decode_buffer.len]);
 
     //Output layer 2 which gives us the next part of the puzzle
-    try fs.cwd().writeFile("layer2.txt", decode_buffer[0..layer1_decoded_len]);
+    try fs.cwd().writeFile("layer2_instructions.txt", decode_buffer[0..layer1_decoded_len]);
 }
