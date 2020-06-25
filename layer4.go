@@ -7,7 +7,7 @@ import (
   "io/ioutil"
 )
 
-// Tom's Data Onion - Layer 3
+// Tom's Data Onion - Layer 4
 // https://www.tomdalling.com/toms-data-onion/
 //
 // Solve the fourth layer of the puzzle which is Ascii85 conversion followed by
