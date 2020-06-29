@@ -2,17 +2,17 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 
-/// Tom's Data Onion - Layer 2
+/// Tom's Data Onion - Layer 1
 /// https://www.tomdalling.com/toms-data-onion/
 ///
-/// Solves the second layer of the puzzle by again peforming an ascii85 conversion and then:
+/// Solves the next layer of the puzzle by again peforming an ascii85 conversion and then:
 ///  1. Flip every second bit
 ///  2. Rotate the bits one position to the right
 ///
-/// To RUN: rustc layer2.rs && ./layer2
+/// To RUN: rustc layer1.rs && ./layer1
 ///
 fn main() {
-    let mut payload_file = File::open("layer2_payload.txt").unwrap();
+    let mut payload_file = File::open("layer1_payload.txt").unwrap();
     let mut payload = Vec::new();
     payload_file.read_to_end(&mut payload).expect(
         "Failed to read to end of file",
@@ -24,8 +24,8 @@ fn main() {
         .collect();
 
     //Write out the instructions for the next layer
-    let mut layer3_payload_file = File::create("layer3_instructions.txt").unwrap();
-    layer3_payload_file.write(&*decoded).expect(
+    let mut layer2_payload_file = File::create("layer2_instructions.txt").unwrap();
+    layer2_payload_file.write(&*decoded).expect(
         "Failed to write to file",
     );
 }

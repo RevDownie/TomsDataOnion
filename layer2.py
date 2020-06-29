@@ -1,16 +1,16 @@
 import base64
 
 """
- Tom's Data Onion - Layer 3
+ Tom's Data Onion - Layer 2
  https://www.tomdalling.com/toms-data-onion/
 
- Solve the third layer of the puzzle which is Ascii85 conversion followed by:
+ Solve the next layer of the puzzle which is Ascii85 conversion followed by:
     1. Discarding bytes where the parity bit (LSB) isn't correct
     2. Parity bit is calculated as 1 if the sum of all 1 bits is odd, 0 otherwise
 
 
  Requires Python3
- To RUN: python layer3.py
+ To RUN: python layer2.py
 """
 
 SET_BITS_COUNT_LUT = (b'\x00\x01\x01\x02\x01\x02\x02\x03\x01\x02\x02\x03\x02\x03\x03\x04'
@@ -71,7 +71,7 @@ def strip_parity_bits(byte_data):
 """
 """
 def run():
-    with open("layer3_payload.txt") as payload:
+    with open("layer2_payload.txt") as payload:
         # Slice off the delimeters and decode the ascii85
         decoded = base64.a85decode(payload.read()[2:-2])
 
@@ -85,7 +85,7 @@ def run():
         stripped = strip_parity_bits(list(filtered))
 
         # Write out the instructions for the next layer
-        with open("layer4_instructions.txt", 'w') as instructions:
+        with open("layer3_instructions.txt", 'w') as instructions:
             instructions.write(stripped.decode('ascii'))
 
 

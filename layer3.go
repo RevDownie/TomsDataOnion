@@ -8,17 +8,17 @@ import (
   "math"
 )
 
-// Tom's Data Onion - Layer 4
+// Tom's Data Onion - Layer 3
 // https://www.tomdalling.com/toms-data-onion/
 //
-// Solve the fourth layer of the puzzle which is Ascii85 conversion followed by
+// Solve the next layer of the puzzle which is Ascii85 conversion followed by
 // figuring out the XOR encryption key
 //
-// To RUN: go run layer4.go
+// To RUN: go run layer3.go
 //
 func main() {
   //Read the payload
-  encoded_data, read_err := ioutil.ReadFile("layer4_payload.txt")
+  encoded_data, read_err := ioutil.ReadFile("layer3_payload.txt")
   if read_err != nil {
     panic(read_err)
   }
@@ -70,7 +70,7 @@ func main() {
   }
 
   //Output the next layer's instructions
-  write_err := ioutil.WriteFile("layer5_instructions.txt", decrypted_data, 0644)
+  write_err := ioutil.WriteFile("layer4_instructions.txt", decrypted_data, 0644)
   if write_err != nil {
     panic(write_err)
   }

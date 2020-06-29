@@ -35,19 +35,19 @@ UDPHeader UDPHeaderUnpack(const uint8_t*);
 bool ValidateIPv4HeaderChecksum(const void*);
 bool ValidateUDPChecksum(uint32_t, uint32_t, uint16_t, const UDPHeader&, const void*, uint16_t);
 
-/// Tom's Data Onion - Layer 5
+/// Tom's Data Onion - Layer 4
 /// https://www.tomdalling.com/toms-data-onion/
 ///
-/// Solve the fourth layer of the puzzle which is Ascii85 conversion followed by
+/// Solve the nexy layer of the puzzle which is Ascii85 conversion followed by
 /// unpacking UDP packets and discarding corrupted ones
 ///
 /// NOTE: Compiled with C++17
-/// To RUN: clang layer5.cpp -std=c++17 -lstdc++ -o layer5 && ./layer5
+/// To RUN: clang layer4.cpp -std=c++17 -lstdc++ -o layer4 && ./layer4
 ///
 int main()
 {
     //---Read the payload data
-    std::ifstream payloadFile("layer5_payload.txt");
+    std::ifstream payloadFile("layer4_payload.txt");
     payloadFile.seekg(0, std::ifstream::end);
     size_t payloadLength = payloadFile.tellg();
     payloadFile.seekg(0, std::ifstream::beg);
@@ -92,7 +92,7 @@ int main()
     }
 
     //---Output the instructions for the next layer
-    std::ofstream instructionsFile("layer6_instructions.txt", std::ios::out | std::ios::trunc);
+    std::ofstream instructionsFile("layer5_instructions.txt", std::ios::out | std::ios::trunc);
     instructionsFile.write((const char*)processedData, nextOut - processedData);
     instructionsFile.close();
     delete[] processedData;
