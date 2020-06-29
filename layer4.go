@@ -5,6 +5,7 @@ import (
   "encoding/ascii85"
   "errors"
   "io/ioutil"
+  "math"
 )
 
 // Tom's Data Onion - Layer 4
@@ -21,10 +22,12 @@ func main() {
   if read_err != nil {
     panic(read_err)
   }
+  encoded_data_slice := encoded_data[2 : len(encoded_data)-2]
 
   //Decode the payload from Ascii85
-  decoded_buffer := make([]byte, 1024*100)
-  ndst, _, decode_err := ascii85.Decode(decoded_buffer, encoded_data[2:len(encoded_data)-2], true) //Slice of the delimeters
+  decoded_data_length := len(encoded_data_slice) - int(math.Ceil(float64(len(encoded_data_slice))/5.0)) //Calculate the length 5 bytes > 4 bytes ignoring z compression
+  decoded_buffer := make([]byte, decoded_data_length)
+  ndst, _, decode_err := ascii85.Decode(decoded_buffer, encoded_data_slice, true) //Slice of the delimeters
   if decode_err != nil {
     panic(decode_err)
   }
@@ -35,7 +38,7 @@ func main() {
   //We know the opening line will be '==[ Layer 4/5: ' but that isn't long enough to decrypt our 32 byte key. However we also know the file will contain
   //'==[ Payload ]===============================================' which is long enough but we don't know where in the file it will be.
   //We can partially decrypt with a partial key and then look for the payload line to get the rest
-  known_decoded := "==[ Layer 4/5: "
+  const known_decoded = "==[ Layer 4/5: "
   var key [32]byte
   for i := 0; i < len(known_decoded); i++ {
     key[i] = known_decoded[i] ^ encrypted_data[i]
@@ -55,7 +58,7 @@ func main() {
   }
 
   //Build the full key - starting at the offset
-  known_decoded2 := "==[ Payload ]==================="
+  const known_decoded2 = "==[ Payload ]==================="
   for i := 0; i < 32; i++ {
     key[(found_idx+i)%32] = known_decoded2[i] ^ encrypted_data[found_idx+i]
   }
