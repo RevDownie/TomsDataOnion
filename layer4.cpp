@@ -156,14 +156,14 @@ DecodeResult Ascii85Decode(const uint8_t* encodedData, size_t encodedDataLength)
 
         const uint32_t p = (block[0] - 33) * 52200625 + (block[1] - 33) * 614125 + (block[2] - 33) * 7225 + (block[3] - 33) * 85 + (block[4] - 33);
 
-        decodedData[o++] = (p >> 24) & 0xFF;
-        decodedData[o++] = (p >> 16) & 0xFF;
-        decodedData[o++] = (p >> 8) & 0xFF;
-        decodedData[o++] = p & 0xFF;
+        for(size_t k=0; k<remaining-1; ++k) 
+        {
+            decodedData[o++] = (p >> (24-8*k)) & 0xFF;
+        }
     }
 
     DecodeResult result;
-    result.m_data = std::unique_ptr<uint8_t[]>(decodedData);;
+    result.m_data = std::unique_ptr<uint8_t[]>(decodedData);
     result.m_length = decodedDataLength;
     return result;
 }
