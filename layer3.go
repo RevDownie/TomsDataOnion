@@ -3,9 +3,9 @@ package main
 import (
   "bytes"
   "encoding/ascii85"
+  "encoding/hex"
   "errors"
   "io/ioutil"
-  "math"
 )
 
 // Tom's Data Onion - Layer 3
@@ -22,12 +22,11 @@ func main() {
   if read_err != nil {
     panic(read_err)
   }
-  encoded_data_slice := encoded_data[2 : len(encoded_data)-2]
+  encoded_data_slice := encoded_data[2 : len(encoded_data)-2] //Slice of the delimeters
 
   //Decode the payload from Ascii85
-  decoded_data_length := len(encoded_data_slice) - int(math.Ceil(float64(len(encoded_data_slice))/5.0)) //Calculate the length 5 bytes > 4 bytes ignoring z compression
-  decoded_buffer := make([]byte, decoded_data_length)
-  ndst, _, decode_err := ascii85.Decode(decoded_buffer, encoded_data_slice, true) //Slice of the delimeters
+  decoded_buffer := make([]byte, 500*1024)
+  ndst, _, decode_err := ascii85.Decode(decoded_buffer, encoded_data_slice, true)
   if decode_err != nil {
     panic(decode_err)
   }
@@ -35,10 +34,10 @@ func main() {
 
   //Crack the 'encryption'
   //Because the previous instructions follow a similar format we can make a good guess at what some of the decrypted data will be and use that to figure out the key
-  //We know the opening line will be '==[ Layer 4/5: ' but that isn't long enough to decrypt our 32 byte key. However we also know the file will contain
+  //We know the opening line will be '==[ Layer 4/6: ' but that isn't long enough to decrypt our 32 byte key. However we also know the file will contain
   //'==[ Payload ]===============================================' which is long enough but we don't know where in the file it will be.
   //We can partially decrypt with a partial key and then look for the payload line to get the rest
-  const known_decoded = "==[ Layer 4/5: "
+  const known_decoded = "==[ Layer 4/6: "
   var key [32]byte
   for i := 0; i < len(known_decoded); i++ {
     key[i] = known_decoded[i] ^ encrypted_data[i]
@@ -52,7 +51,12 @@ func main() {
   }
 
   //Search for start of payload line based on output from previous run
-  found_idx := bytes.Index(decrypted_data, []byte("==[ P"))
+  //3d 3dc5 8549 54
+  known_partial, hex_err := hex.DecodeString("3d3dc5854954ef")
+  if hex_err != nil {
+    panic(hex_err)
+  }
+  found_idx := bytes.Index(decrypted_data, known_partial)
   if found_idx < 0 {
     panic("Cannot find payload string")
   }
