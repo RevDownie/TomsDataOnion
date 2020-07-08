@@ -26,7 +26,7 @@ fn main() {
     //Write out the instructions for the next layer
     let mut layer2_payload_file = File::create("layer2_instructions.txt").unwrap();
     layer2_payload_file
-        .write(&*decoded)
+        .write_all(&*decoded)
         .expect("Failed to write to file");
 }
 
@@ -61,7 +61,7 @@ fn generate_ascii85_decoder(encoded_data: &[u8]) -> impl Iterator<Item = u8> + '
     //Handle the remainder
     let remainder_slice = &encoded_data_slice[aligned_slice.len()..encoded_data_slice.len()];
     let mut remainder_chunk: [u8; 5] = [117; 5];
-    for (i, v) in remainder_slice.into_iter().enumerate() {
+    for (i, v) in remainder_slice.iter().enumerate() {
         remainder_chunk[i] = *v;
     }
 
