@@ -4,12 +4,13 @@ import java.io.File
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.math.ceil
 
 /**
 * Tom's Data Onion - Layer 5
 * https://www.tomdalling.com/toms-data-onion/
 *
-* Solve the final layer of the puzzle which is Ascii85 conversion followed by
+* Solve the next layer of the puzzle which is Ascii85 conversion followed by
 * AES 256 CBC decryption
 *
 * To RUN: kotlinc layer5.kt -include-runtime -d layer5.jar && java -jar layer5.jar
@@ -30,16 +31,16 @@ fun main() {
     // Decrypt the payload using the decrypted key. First 16 bytes are the IV and the remainder is the payload
     val ivPayload = ByteArray(16); decodedPayloadStream.read(ivPayload, 0, ivPayload.size)
     val payloadSize = decodedPayload.size - (kek.size + ivKey.size + encryptedKey.size + ivPayload.size)
-    check(payloadSize % 16 == 0) { "Incorrect payload size - meant to be 16 byte aligned" }
-    val encryptedPayload = ByteArray(payloadSize); decodedPayloadStream.read(encryptedPayload, 0, payloadSize)
+    val payloadSizeAligned = payloadSize + (16 - (payloadSize % 16))
+    val encryptedPayload = ByteArray(payloadSizeAligned); decodedPayloadStream.read(encryptedPayload, 0, payloadSize)
     decodedPayloadStream.close()
 
     val cipher = Cipher.getInstance("AES/CBC/NoPadding")
     cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(decryptedKey, "AES"), IvParameterSpec(ivPayload))
-    val decryptedPayload = cipher.doFinal(encryptedPayload)
+    val decryptedPayload = cipher.doFinal(encryptedPayload).sliceArray(0 until payloadSize)
 
-    // Write out the secret at the core
-    File("core.txt").writeText(String(decryptedPayload))
+    // Write out the next layer's instructions
+    File("layer6_instructions.txt").writeText(String(decryptedPayload))
 }
 
 /**
@@ -54,7 +55,6 @@ fun main() {
 * NOTE: Acii85 data gets wrapped in <~ ~> delimeters
 **/
 fun ascii85Decode(encodedData: ByteArray): ByteArray {
-    val padding = 5 - ((encodedData.size - 4) % 5)
     val b = (2..encodedData.size - 2).map { encodedData[it] }.asIterable() // Slice the delimeters
         .chunked(5) // Split into 5 byte chunks
         .flatMap {
@@ -63,7 +63,9 @@ fun ascii85Decode(encodedData: ByteArray): ByteArray {
                 .toBytes().asIterable() // Unpack into 4 bytes
         }
 
-    return b.take(b.count() - padding).toByteArray() // Drop the padding
+    val encodedDataLen = encodedData.size - 4
+    val decodedDataLen = encodedDataLen - ceil(encodedDataLen / 5.0).toInt()
+    return b.take(decodedDataLen).toByteArray() // Drop the padding
 }
 
 /**

@@ -30,10 +30,12 @@ SET_BITS_COUNT_LUT = (b'\x00\x01\x01\x02\x01\x02\x02\x03\x01\x02\x02\x03\x02\x03
                       b'\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07'
                       b'\x04\x05\x05\x06\x05\x06\x06\x07\x05\x06\x06\x07\x06\x07\x07\x08')
 
-"""
-Sums the set bits. If odd, parity bit should be 1 otherwise 0
-"""
+
 def has_correct_parity(v):
+    """
+    Sums the set bits. If odd, parity bit should be 1 otherwise 0
+    """
+
     # Ignore the least significant bit as that is the parity bit
     discard_lsb = v & ~1
     set_bits = SET_BITS_COUNT_LUT[discard_lsb]
@@ -42,14 +44,15 @@ def has_correct_parity(v):
     return parity == parity_check
 
 
-"""
-Strip out the parity bit and pack the data 8 byte chunks are packed into 7 bytes
-
-"To make this layer a little bit easier, the byte size of the payload is guaranteed to be a multiple of eight. Every group
-of eight bytes contains 64 bits total, including 8 parity bits. Removing the 8 parity bits leaves behind 56 data
-bits, which is exactly seven bytes."
-"""
 def strip_parity_bits(byte_data):
+    """
+    Strip out the parity bit and pack the data 8 byte chunks are packed into 7 bytes
+
+    "To make this layer a little bit easier, the byte size of the payload is guaranteed to be a multiple of eight. Every group
+    of eight bytes contains 64 bits total, including 8 parity bits. Removing the 8 parity bits leaves behind 56 data
+    bits, which is exactly seven bytes."
+    """
+
     in_len = len(byte_data)
     out_len = in_len - (in_len >> 3)
 
@@ -68,10 +71,9 @@ def strip_parity_bits(byte_data):
     return output
 
 
-"""
-"""
 def run():
     with open("layer2_payload.txt") as payload:
+
         # Slice off the delimeters and decode the ascii85
         decoded = base64.a85decode(payload.read()[2:-2])
 

@@ -12,4 +12,11 @@
       Congratulations! You've DICED this onion up!
 
 
-I don't want to talk about it
+This is the end of Tom's Data Onion version 1.1.
+I hope you had fun! Check back later for newer versions with
+more layers.
+
+==[ The Secret ]============================================
+
+People need to know about this as a public health concern!
+

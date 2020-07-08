@@ -14,9 +14,9 @@ use std::io::Write;
 fn main() {
     let mut payload_file = File::open("layer1_payload.txt").unwrap();
     let mut payload = Vec::new();
-    payload_file.read_to_end(&mut payload).expect(
-        "Failed to read to end of file",
-    );
+    payload_file
+        .read_to_end(&mut payload)
+        .expect("Failed to read to end of file");
 
     let ascii85_decode_generator = generate_ascii85_decoder(&*payload);
     let decoded: Vec<u8> = ascii85_decode_generator
@@ -25,9 +25,9 @@ fn main() {
 
     //Write out the instructions for the next layer
     let mut layer2_payload_file = File::create("layer2_instructions.txt").unwrap();
-    layer2_payload_file.write(&*decoded).expect(
-        "Failed to write to file",
-    );
+    layer2_payload_file
+        .write_all(&*decoded)
+        .expect("Failed to write to file");
 }
 
 /// https://en.wikipedia.org/wiki/Ascii85
@@ -38,7 +38,6 @@ fn main() {
 /// - Each byte will have the decoded ascii value (4 values)
 ///
 /// NOTE: If a group has all zeros it is encoded as a single character 'z' so decoding converts 'z' to 0000. The data didn't require this has been omitted
-/// NOTE: Data didn't require padding so omitted it
 /// NOTE: Acii85 data gets wrapped in <~ ~> delimeters
 ///
 /// Returns an iterator
@@ -48,7 +47,8 @@ fn generate_ascii85_decoder(encoded_data: &[u8]) -> impl Iterator<Item = u8> + '
     let encoded_data_slice = &encoded_data[2..encoded_data.len() - 2];
 
     //Split into 5 byte chunks for each chunk peform the ascii conversion and pack 32 bits. Then unpack big endian into 4 1-byte decoded characters
-    encoded_data_slice.chunks(5).flat_map(|chunk| {
+    let aligned_slice = &encoded_data_slice[..encoded_data_slice.len() / 5 * 5];
+    let aligned_it = aligned_slice.chunks(5).flat_map(|chunk| {
         chunk
             .iter()
             .enumerate()
@@ -56,5 +56,24 @@ fn generate_ascii85_decoder(encoded_data: &[u8]) -> impl Iterator<Item = u8> + '
             .sum::<u32>()
             .to_be_bytes()
             .to_vec()
-    })
+    });
+
+    //Handle the remainder
+    let remainder_slice = &encoded_data_slice[aligned_slice.len()..encoded_data_slice.len()];
+    let mut remainder_chunk: [u8; 5] = [117; 5];
+    for (i, v) in remainder_slice.iter().enumerate() {
+        remainder_chunk[i] = *v;
+    }
+
+    let remainder_it = remainder_chunk
+        .iter()
+        .enumerate()
+        .map(|(i, n)| (n - 33) as u32 * u32::pow(85, (4 - i) as u32))
+        .sum::<u32>()
+        .to_be_bytes()
+        .to_vec();
+
+    let decoded_len =
+        encoded_data_slice.len() - (encoded_data_slice.len() as f32 / 5.0).ceil() as usize;
+    aligned_it.chain(remainder_it).take(decoded_len)
 }

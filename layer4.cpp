@@ -38,7 +38,7 @@ bool ValidateUDPChecksum(uint32_t, uint32_t, uint16_t, const UDPHeader&, const v
 /// Tom's Data Onion - Layer 4
 /// https://www.tomdalling.com/toms-data-onion/
 ///
-/// Solve the nexy layer of the puzzle which is Ascii85 conversion followed by
+/// Solve the next layer of the puzzle which is Ascii85 conversion followed by
 /// unpacking UDP packets and discarding corrupted ones
 ///
 /// NOTE: Compiled with C++17
